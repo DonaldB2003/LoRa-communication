@@ -14,16 +14,16 @@ Welcome to LoRa Stopwatch Sync—an innovative IoT project that showcases seamle
 ## Transmitter code
 ### pin configuration
 LoRa RA-02 Module Pinout <=> ESP32 Pin Mapping
-
+|-------------------|------------|---------------|
 | LoRa RA-02 Pin    | Function   | ESP32 Pin     |
-|------------------------------------------------|
+|-------------------|------------|---------------|
 | DIO0              | Interrupt  | GPIO 26       |
 | RESET             | Reset      | GPIO 14       |
 | NSS / CS          | Chip Select| GPIO 18       |
 | MOSI              | MOSI       | GPIO 27       |
 | MISO              | MISO       | GPIO 19       |
 | SCK               | Clock      | GPIO 5        |
-
+|-------------------|------------|---------------|
 
 ```c
 #include <SPI.h>
