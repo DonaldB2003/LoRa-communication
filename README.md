@@ -23,7 +23,7 @@ LoRa RA-02 Module Pinout <=> ESP32 Pin Mapping
 | MOSI              | MOSI       | GPIO 27       |
 | MISO              | MISO       | GPIO 19       |
 | SCK               | Clock      | GPIO 5        |
-|-------------------|------------|---------------|
+
 
 ```c
 #include <SPI.h>
