@@ -12,9 +12,10 @@ Welcome to LoRa Stopwatch Sync—an innovative IoT project that showcases seamle
  - Receiver Node: Listens for incoming data and updates the OLED display in real time.
 
 ## Transmitter code
+
 ### pin configuration
-LoRa RA-02 Module Pinout <=> ESP32 Pin Mapping
-|-------------------|------------|---------------|
+LoRa RA-02 Module Pinout <=> ESP32 Pin Mapping(transmitter)
+
 | LoRa RA-02 Pin    | Function   | ESP32 Pin     |
 |-------------------|------------|---------------|
 | DIO0              | Interrupt  | GPIO 26       |
@@ -24,6 +25,7 @@ LoRa RA-02 Module Pinout <=> ESP32 Pin Mapping
 | MISO              | MISO       | GPIO 19       |
 | SCK               | Clock      | GPIO 5        |
 
+!! Voltage Level: Ensure your LoRa RA-02 module is powered with 3.3V and not 5V, as it may damage the module.
 
 ```c
 #include <SPI.h>
@@ -83,6 +85,103 @@ void loop() {
 
 
 ```
+
+## Receiver code
+LoRa RA-02 Module Pinout <=> ESP32 Pin Mapping(receiver)
+
+| LoRa RA-02 Pin    | Function   | ESP32 Pin     |
+|-------------------|------------|---------------|
+| DIO0              | Interrupt  | GPIO 26       |
+| RESET             | Reset      | GPIO 14       |
+| NSS / CS          | Chip Select| GPIO 18       |
+| MOSI              | MOSI       | GPIO 27       |
+| MISO              | MISO       | GPIO 19       |
+| SCK               | Clock      | GPIO 5        |
+
+!! Voltage Level: Ensure your LoRa RA-02 module is powered with 3.3V and not 5V, as it may damage the module.
+
+```c
+#include <SPI.h>
+#include <LoRa.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+// OLED Configuration
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET -1
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+// LoRa Pins for ESP32
+#define DIO0 26
+#define RST 14
+#define NSS 18
+#define MOSI 27
+#define MISO 19
+#define SCLK 5
+
+void setup() {
+  Serial.begin(9600);
+  
+  // Initialize OLED
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;);
+  }
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0,0);
+  display.println(F("LoRa Receiver"));
+  display.display();
+
+  // Configure LoRa module with ESP32-specific pins
+  SPI.begin(SCLK, MISO, MOSI, NSS);
+  LoRa.setPins(NSS, RST, DIO0);
+  
+  if (!LoRa.begin(433E6)) {
+    Serial.println("LoRa init failed!");
+    display.clearDisplay();
+    display.setCursor(0,0);
+    display.println(F("LoRa Init Failed"));
+    display.display();
+    while (1);
+  }
+  
+  LoRa.setSyncWord(0xF3);
+  Serial.println("LoRa Initialized!");
+  display.clearDisplay();
+  display.setCursor(0,0);
+  display.println(F("LoRa Initialized!"));
+  display.display();
+}
+
+void loop() {
+  int packetSize = LoRa.parsePacket();
+  if (packetSize) {
+    String receivedData = "";
+    while (LoRa.available()) {
+      receivedData += (char)LoRa.read();
+    }
+    
+    Serial.print("Received: ");
+    Serial.println(receivedData);
+
+    // Display on OLED
+    display.clearDisplay();
+    display.setTextSize(2);  // Larger text size for better visibility
+    display.setCursor(0, 20);
+    display.println(receivedData);
+    display.display();
+  }
+  delay(10);
+}
+
+
+```
+
+
 
 ## 🌟 Why Use This Project?
  - Great for Learning: Explore LoRa communication, real-time data transfer, and display integration in a hands-on, practical way.
